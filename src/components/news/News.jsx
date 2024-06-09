@@ -11,8 +11,8 @@ export default class News extends Component {
     // constructor is called when a new instance of the class is created
     constructor(props) {
         super(props);
-        // console.log("constructor is called from News component");
-        // console.log(this.props);
+        console.log("constructor is called from News component");
+        console.log(this.props);
         this.state = {
             articles: this.articles,
             page: 1,
@@ -64,7 +64,7 @@ export default class News extends Component {
             is_loading: true,
         });
         // console.log(`Page: ${this.state.page}`);
-        this.updateNews(page);
+        this.updateNews({page: page });
     };
     handleNextClick = async () => {
         // console.log("next");
@@ -75,7 +75,7 @@ export default class News extends Component {
             is_loading: true,
         });
         // console.log(`Page: ${this.state.page}`);
-        this.updateNews(page);
+        this.updateNews({page: page });
     };
 
     render() {
