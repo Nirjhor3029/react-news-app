@@ -6,8 +6,15 @@ export default class Navbar extends Component {
         super(props);
         this.state = {
             queryText: "",
+            country: "",
         };
     }
+
+    COUNTRIES = [
+        'in',
+        'sa',
+        'us'
+    ];
 
     handleSearchClick = (e) => {
         e.preventDefault();
@@ -15,6 +22,13 @@ export default class Navbar extends Component {
         // console.log("e.target.value:" + e.target.value);
         this.props.onSearchChange(this.state.queryText);
     };
+
+    handleCountrySelect = (e) => {
+        e.preventDefault();
+        console.log("Country Selected:" + e.target.value);
+        this.setState({ country: e.target.value });
+        this.props.onCountryChange(e.target.value);
+    }
     render() {
         // const [queryText, setQueryText] = useState('');
 
@@ -114,6 +128,12 @@ export default class Navbar extends Component {
                                     Search
                                 </button>
                             </form>
+                            <select value={this.state.country} onChange={this.handleCountrySelect} >
+                                {this.COUNTRIES.map((country) => (
+                                    <option key={country} value={country}>{country}</option>
+                                ))}
+                            </select>
+                            
                         </div>
                     </div>
                 </nav>

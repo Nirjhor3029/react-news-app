@@ -2,7 +2,12 @@ components
 nested components
 conditional components load
 iteration 
+components re-render
 api fetch
 componentdidmount
 Promise
 async - await
+
+infinite scrolling
+how to use packages
+

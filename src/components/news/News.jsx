@@ -1,9 +1,12 @@
 import React, { Component } from "react";
-import SpinnerByCSS from "../loader/SpinnerByCSS";
 import NewsItem from "./NewsItem";
 
+import InfiniteScroll from "react-infinite-scroll-component";
+
+
+import "./news.css";
+
 export default class News extends Component {
-    
     articles = [];
     //  BASE_URL = `https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=d57055dba1d3424f900469ec8526dd71`;
     BASE_URL = `https://newsapi.org/v2/top-headlines?apiKey=d57055dba1d3424f900469ec8526dd71`;
@@ -18,8 +21,9 @@ export default class News extends Component {
             page: 1,
             pagesize: 20,
             maxPage: 10,
-            country: "us",
+            country: "in",
             category: "business",
+            totalResults: 0,
             // Set the initial value of the queryText state from the props, or if no prop is provided, set it to an empty string.
             queryText: this.props?.searchValue || "",
             is_loading: true,
@@ -28,11 +32,18 @@ export default class News extends Component {
 
     updateNews = async ({ page = 1, queryText = "" } = {}) => {
         console.log("updateNews is called from News component");
-        let url = `${this.BASE_URL}&q=${queryText}&country=${this.state.country}&category=${this.props?.categeory || ""}&page=${page}&pagesize=${this.state.pagesize}`;
+        let url = `${this.BASE_URL}&q=${queryText}&country=${
+            this.state.country
+        }&category=${this.props?.categeory || ""}&page=${page}&pagesize=${
+            this.state.pagesize
+        }`;
         console.log(url);
         let data = await fetch(url);
         let parseData = await data.json();
-        this.setState({ articles: parseData.articles });
+        this.setState({
+            totalResults: parseData.totalResults,
+            articles: parseData.articles,
+        });
         this.setState({
             maxPage: Math.ceil(parseData.totalResults / this.state.pagesize),
             is_loading: false,
@@ -47,8 +58,10 @@ export default class News extends Component {
                 queryText: this.props.searchValue,
             });
             console.log("componentDidUpdate");
-            this.updateNews({queryText: this.props.searchValue });
+            this.updateNews({ queryText: this.props.searchValue });
         }
+
+        document.title = `${this.props?.categeory || "general"} - Miss Monkey`;
     }
 
     async componentDidMount() {
@@ -64,7 +77,7 @@ export default class News extends Component {
             is_loading: true,
         });
         // console.log(`Page: ${this.state.page}`);
-        this.updateNews({page: page });
+        this.updateNews({ page: page });
     };
     handleNextClick = async () => {
         // console.log("next");
@@ -75,21 +88,65 @@ export default class News extends Component {
             is_loading: true,
         });
         // console.log(`Page: ${this.state.page}`);
-        this.updateNews({page: page });
+        this.updateNews({ page: page });
+    };
+
+    fetchData = async () => {
+        let page = this.state.page+1;
+        let queryText = "";
+        console.log("fetchData");
+        let url = `${this.BASE_URL}&q=${queryText}&country=${
+            this.state.country
+        }&category=${this.props?.categeory || ""}&page=${page}&pagesize=${
+            this.state.pagesize
+        }`;
+        console.log(url);
+        let data = await fetch(url);
+        let parseData = await data.json();
+        this.setState({
+            totalResults: parseData.totalResults,
+            articles: this.state.articles.concat(parseData.articles),
+            maxPage: Math.ceil(parseData.totalResults / this.state.pagesize),
+            is_loading: false,
+            page: page,
+        });
+
+        // Fetch data from an API or any data source
+        // const response = await fetch(
+        //     `https://api.example.com/data?page=${page}`
+        // );
+        // const newData = await response.json();
+        // setData([...data, ...newData]);
+        // setPage(page + 1);
+    };
+
+    capitalize = (str) => {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     };
 
     render() {
-        console.log("Search Value:", this.props.searchValue); // Debugging
+        // console.log("Search Value:", this.props.searchValue); // Debugging
         // console.log("Received Props in News:", this.props); // Debugging
-        console.log("Query Text:", this.state.queryText); // Debugging
+        // console.log("Query Text:", this.state.queryText); // Debugging
 
         return (
             <div className="container ">
-                <h2 className="my-3">Miss Monkey - Top Headlines</h2>
-                {this.state.is_loading && <SpinnerByCSS />}
+                <h2 className="my-3">{this.props?.categeory?.charAt(0).toUpperCase() + this.props?.categeory?.slice(1) || "General"} - Top Headlines</h2>
+                {this.state.country}
+                {/* {this.state.is_loading && <SpinnerByCSS />} */}
 
-                {!this.state.is_loading && (
+                {/* <div className="row"> */}
+                <InfiniteScroll
+                    dataLength={this.state.articles.length}
+                    next={this.fetchData}
+                    hasMore={
+                        this.state.articles.length < this.state.totalResults
+                    } // Set to false when there is no more data to load
+                    // loader={<h4>Loading...</h4>}
+                    loader={<h4>Loading...</h4>}
+                >
                     <div className="row">
+                        {/* Render your data */}
                         {this.state.articles.map((element) => {
                             // console.log(element);
                             if (
@@ -111,6 +168,8 @@ export default class News extends Component {
                                             )}
                                             newsUrl={element.url}
                                             imgUrl={element.urlToImage}
+                                            date={element.publishedAt}
+                                            author={element.author}
                                         />
                                     </div>
                                 );
@@ -118,7 +177,8 @@ export default class News extends Component {
                             return null;
                         })}
                     </div>
-                )}
+                </InfiniteScroll>
+                {/* </div> */}
 
                 <div className="d-flex justify-content-between my-3">
                     <button
